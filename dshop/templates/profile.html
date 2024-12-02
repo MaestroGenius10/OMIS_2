@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .top-section {
+            background-color: #999999;
+            height: 20vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #343a40;
+        }
+        .navbar {
+            background-color: #808080;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .navbar a {
+            color: #343a40;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .profile-container {
+            display: flex;
+            justify-content: flex-start;
+            margin: 20px 0;
+            padding-left: 0; /* Убрали отступ */
+        }
+        .profile-sidebar {
+            width: 25%;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            margin-left: -10px; /* Сдвиг влево */
+        }
+        .profile-sidebar img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        .profile-sidebar h2 {
+            margin-bottom: 20px;
+        }
+        .profile-sidebar a {
+            text-decoration: none;
+            color: #343a40;
+        }
+        .profile-sidebar a:hover {
+            text-decoration: underline;
+        }
+        .logout-button {
+            background-color: #808080;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 20px;
+            width: calc(100% - 40px);
+            text-align: center;
+        }
+        .logout-button:hover {
+            background-color: #606060;
+        }
+        .links-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Все элементы сверху */
+            overflow: visible; /* Убедиться, что переполнение не скрывается */
+            gap: 10px; /* Расстояние между ссылками */
+        }
+        .security-section {
+            width: 50%;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .security-section h2 {
+            margin-bottom: 20px;
+        }
+        .security-section form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .security-section input {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 80%;
+        }
+        .security-section button {
+            padding: 10px 20px;
+            background-color: #808080;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .security-section button:hover {
+            background-color: #606060;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        DIGITALITY
+    </div>
+    <div class="navbar">
+        <a href="{{ url_for('catalog') }}">Каталог</a>
+        <a href="{{ url_for('view_cart') }}">Корзина</a>
+        <a href="#">Сообщения</a>
+        <a href="{{ url_for('my_goods') }}">Мои товары</a>
+        <a href="{{ url_for('profile') }}">Профиль</a>
+    </div>
+    <div class="container">
+        <div class="profile-container">
+            <div class="profile-sidebar">
+                <img src="{{ url_for('static', filename='images/' + (user.profile_picture or 'default.png')) }}" alt="{{ user.name }}">
+                <h2>{{ user.name }}</h2>
+                <div class="links-container">
+                    <a href="{{ url_for('purchases') }}">Покупки</a>
+                    <a href="{{ url_for('view_personal_data') }}">Личные данные</a>
+                    <a href="{{ url_for('profile') }}">Безопасность</a>
+                    <a href="{{ url_for('view_user_cards') }}">Оплата</a>
+                </div>
+                <button class="logout-button" onclick="window.location.href='{{ url_for('logout') }}'">Выйти</button>
+            </div>
+            <div class="security-section">
+                <h2>Безопасность</h2>
+                <h3>Изменить пароль</h3>
+                <form method="POST" action="{{ url_for('change_password') }}">
+                    <input type="password" name="old_password" placeholder="Старый пароль" required>
+                    <input type="password" name="new_password" placeholder="Новый пароль" required>
+                    <input type="password" name="confirm_password" placeholder="Повторите новый пароль" required>
+                    <button type="submit">Изменить пароль</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

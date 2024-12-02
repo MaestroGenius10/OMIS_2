@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .top-section {
+            background-color: #999999; /* Gray background */
+            height: 20vh; /* 1/5 of the viewport height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #343a40; /* Dark gray text color */
+        }
+        .navbar {
+            background-color: #808080; /* Gray background */
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%; /* Occupy the full width of the page */
+            position: relative; /* Ensure the navbar covers the full width */
+        }
+        .navbar a {
+            color: #343a40; /* Dark gray text color */
+            text-decoration: none;
+            margin: 0 5px; /* Reduced margin */
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .search-form {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .search-form input {
+            flex: 1;
+            margin: 0 10px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+        }
+        .product-card:hover {
+            text-decoration: none;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        DIGITALITY
+    </div>
+    <div class="navbar">
+    <a href="{{ url_for('catalog') }}">Каталог</a>
+    <a href="{{ url_for('view_cart') }}">Корзина</a>
+    <a href="#">Сообщения</a>
+    <a href="{{ url_for('my_goods') }}">Мои товары</a>
+    <a href="{{ url_for('profile') }}">Профиль</a>
+</div>
+    <div class="container">
+        <form class="search-form" method="POST" action="{{ url_for('catalog') }}">
+            <input type="text" class="form-control" name="good_name" placeholder="Имя товара">
+            <input type="text" class="form-control" name="category_name" placeholder="Категория">
+            <input type="text" class="form-control" name="price_range" placeholder="Ценовой диапазон (например, 10-100)">
+            <button type="submit" class="btn btn-secondary">Поиск</button>
+        </form>
+        <div class="product-grid">
+            {% for good in goods %}
+                <a href="{{ url_for('good_detail', good_id=good.id) }}" class="product-card">
+                   <img src="{{ url_for('static', filename='images/' + good.product_picture) }}" alt="Product Image">
+                    <h3>{{ good.name }}</h3>
+                    <p>{{ good.price }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

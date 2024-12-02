@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .top-section {
+            background-color: #808080;
+            height: 20vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #343a40;
+        }
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+        }
+        .btn-block {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        DIGITALITY
+    </div>
+    <div class="container">
+        <div class="form-container mt-5">
+            <h2 class="text-center mb-4">Регистрация</h2>
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                           <!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+            <!-- Form -->
+            <form method="POST">
+                <div class="form-group mb-3">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Имя пользователя" value="{{ request.form.name or '' }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Эл.почта" value="{{ request.form.email or '' }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Пароль" required>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-block">Регистрация</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
