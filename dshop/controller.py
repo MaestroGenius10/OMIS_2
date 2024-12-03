@@ -4,6 +4,7 @@ from view import *
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 class ApplicationController:
     def __init__(self, connection_string):
         self.connection_string = connection_string
@@ -29,6 +30,130 @@ class ApplicationController:
         self.personal_data_controller.setup_routes(app)
         self.cart_controller.setup_routes(app)
         self.order_controller.setup_routes(app)
+
+    def run_migrations(self):
+        conn = psycopg2.connect(self.connection_string)
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+-- Создание таблицы пользователей, если она не существует
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(255),
+    birth_date DATE, -- Поле для даты рождения
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы категорий товаров, если она не существует
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+-- Создание таблицы товаров, если она не существует
+CREATE TABLE IF NOT EXISTS goods (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    price NUMERIC(10, 2) NOT NULL,
+    category_id INT REFERENCES categories(id),
+    status VARCHAR(50) DEFAULT 'active', -- Возможные значения: active, hidden, deleted
+    product_picture VARCHAR(255), -- Поле для ссылки на фото товара
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы сообщений, если она не существует
+CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    sender_id INT REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id INT REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы уведомлений, если она не существует
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(100) NOT NULL, -- Тип уведомления
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы корзин, если она не существует
+CREATE TABLE IF NOT EXISTS carts (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Создание таблицы товаров в корзине, если она не существует
+CREATE TABLE IF NOT EXISTS cart_items (
+    id SERIAL PRIMARY KEY,
+    cart_id INT REFERENCES carts(id) ON DELETE CASCADE,
+    good_id INT REFERENCES goods(id) ON DELETE CASCADE,
+    quantity INT DEFAULT 1
+);
+
+-- Создание таблицы заказов, если она не существует
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    total_price NUMERIC(10, 2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'processing', -- Возможные значения: processing, completed, canceled
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы товаров в заказах, если она не существует
+CREATE TABLE IF NOT EXISTS order_items (
+    id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+    good_id INT REFERENCES goods(id) ON DELETE CASCADE,
+    quantity INT DEFAULT 1,
+    price NUMERIC(10, 2) NOT NULL
+);
+
+-- Создание таблицы транзакций, если она не существует
+CREATE TABLE IF NOT EXISTS transactions (
+    id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+    payment_method VARCHAR(50) NOT NULL, -- Пример: card, e-wallet
+    amount NUMERIC(10, 2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'success', -- Возможные значения: success, failed, pending
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы карт оплаты, если она не существует
+CREATE TABLE IF NOT EXISTS payment_cards (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    card_number VARCHAR(16) NOT NULL,
+    card_holder_name VARCHAR(100) NOT NULL,
+    expiration_date DATE NOT NULL,
+    cvv VARCHAR(4) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание индексов для оптимизации запросов, если они не существуют
+CREATE INDEX IF NOT EXISTS idx_goods_category_id ON goods(category_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id ON cart_items(cart_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_good_id ON cart_items(good_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_good_id ON order_items(good_id);
+            """
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
 class UserController:
     def __init__(self, user_service):
         self.user_service = user_service

@@ -9,8 +9,8 @@ def create_database(connection_string):
 
         cursor.execute(
             """
--- Создание таблицы пользователей
-CREATE TABLE users (
+-- Создание таблицы пользователей, если она не существует
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -21,14 +21,14 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы категорий товаров
-CREATE TABLE categories (
+-- Создание таблицы категорий товаров, если она не существует
+CREATE TABLE IF NOT EXISTS categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
 
--- Создание таблицы товаров
-CREATE TABLE goods (
+-- Создание таблицы товаров, если она не существует
+CREATE TABLE IF NOT EXISTS goods (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
@@ -41,8 +41,8 @@ CREATE TABLE goods (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы сообщений
-CREATE TABLE messages (
+-- Создание таблицы сообщений, если она не существует
+CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     sender_id INT REFERENCES users(id) ON DELETE CASCADE,
     receiver_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -50,8 +50,8 @@ CREATE TABLE messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы уведомлений
-CREATE TABLE notifications (
+-- Создание таблицы уведомлений, если она не существует
+CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(100) NOT NULL, -- Тип уведомления
@@ -60,22 +60,22 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы корзин
-CREATE TABLE carts (
+-- Создание таблицы корзин, если она не существует
+CREATE TABLE IF NOT EXISTS carts (
     id SERIAL PRIMARY KEY,
     user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Создание таблицы товаров в корзине
-CREATE TABLE cart_items (
+-- Создание таблицы товаров в корзине, если она не существует
+CREATE TABLE IF NOT EXISTS cart_items (
     id SERIAL PRIMARY KEY,
     cart_id INT REFERENCES carts(id) ON DELETE CASCADE,
     good_id INT REFERENCES goods(id) ON DELETE CASCADE,
     quantity INT DEFAULT 1
 );
 
--- Создание таблицы заказов
-CREATE TABLE orders (
+-- Создание таблицы заказов, если она не существует
+CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     total_price NUMERIC(10, 2) NOT NULL,
@@ -83,8 +83,8 @@ CREATE TABLE orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы товаров в заказах
-CREATE TABLE order_items (
+-- Создание таблицы товаров в заказах, если она не существует
+CREATE TABLE IF NOT EXISTS order_items (
     id SERIAL PRIMARY KEY,
     order_id INT REFERENCES orders(id) ON DELETE CASCADE,
     good_id INT REFERENCES goods(id) ON DELETE CASCADE,
@@ -92,8 +92,8 @@ CREATE TABLE order_items (
     price NUMERIC(10, 2) NOT NULL
 );
 
--- Создание таблицы транзакций
-CREATE TABLE transactions (
+-- Создание таблицы транзакций, если она не существует
+CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     order_id INT REFERENCES orders(id) ON DELETE CASCADE,
     payment_method VARCHAR(50) NOT NULL, -- Пример: card, e-wallet
@@ -102,8 +102,8 @@ CREATE TABLE transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание таблицы карт оплаты
-CREATE TABLE payment_cards (
+-- Создание таблицы карт оплаты, если она не существует
+CREATE TABLE IF NOT EXISTS payment_cards (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     card_number VARCHAR(16) NOT NULL,
@@ -113,12 +113,12 @@ CREATE TABLE payment_cards (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Создание индексов для оптимизации запросов
-CREATE INDEX idx_goods_category_id ON goods(category_id);
-CREATE INDEX idx_cart_items_cart_id ON cart_items(cart_id);
-CREATE INDEX idx_cart_items_good_id ON cart_items(good_id);
-CREATE INDEX idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX idx_order_items_good_id ON order_items(good_id);
+-- Создание индексов для оптимизации запросов, если они не существуют
+CREATE INDEX IF NOT EXISTS idx_goods_category_id ON goods(category_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id ON cart_items(cart_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_good_id ON cart_items(good_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_good_id ON order_items(good_id);
             """
         )
 

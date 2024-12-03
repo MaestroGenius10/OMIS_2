@@ -1,18 +1,27 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+    command: >
+      ./wait-for-it.sh db:5432 --
+      sh -c "python migrate.py && python app.py"
     ports:
       - "5000:5000"
-    environment:
-      - DATABASE_URL=postgres://postgres:1234@db:5432/catalog_db
     depends_on:
       - db
+    environment:
+      - DATABASE_URL=postgres://postgres:1234@db:5432/catalog_db
 
   db:
-    image: postgres:16
+    image: postgres:13
     environment:
-      POSTGRES_DB: catalog_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: catalog_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
